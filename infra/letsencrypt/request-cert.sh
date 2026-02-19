@@ -26,13 +26,13 @@ fi
 create_placeholder_cert() {
   local domain="$1"
   local live_dir="/etc/letsencrypt/live/${domain}"
-  local archive_dir="/etc/letsencrypt/archive/${domain}"
+  local placeholder_root="/etc/letsencrypt/placeholders/${domain}"
   local renewal_dir="/etc/letsencrypt/renewal"
-  mkdir -p "$live_dir" "$archive_dir" "$renewal_dir"
+  mkdir -p "$live_dir" "$placeholder_root" "$renewal_dir"
 
   local placeholder_dir=""
-  for candidate in "$archive_dir"/*; do
-    if [[ -d "$candidate" ]] && [[ -f "$candidate/.placeholder" ]]; then
+  for candidate in "$placeholder_root"/*; do
+    if [[ -d "$candidate" ]] && [[ -f "${candidate}/.placeholder" ]]; then
       placeholder_dir="$candidate"
       break
     fi
@@ -40,24 +40,24 @@ create_placeholder_cert() {
 
   if [[ -z "$placeholder_dir" ]]; then
     local version="0001"
-    local highest="$(find "$archive_dir" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort | tail -n1)"
+    local highest="$(find "$placeholder_root" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort | tail -n1)"
     if [[ -n "$highest" ]]; then
       version="$(printf '%04d' $((10#$highest + 1)))"
     fi
-    placeholder_dir="$archive_dir/$version"
+    placeholder_dir="${placeholder_root}/${version}"
     mkdir -p "$placeholder_dir"
     openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
-      -keyout "$placeholder_dir/privkey.pem" \
-      -out "$placeholder_dir/fullchain.pem" \
+      -keyout "${placeholder_dir}/privkey.pem" \
+      -out "${placeholder_dir}/fullchain.pem" \
       -subj "/CN=${domain}" >/dev/null 2>&1
-    cp "$placeholder_dir/fullchain.pem" "$placeholder_dir/chain.pem"
-    touch "$placeholder_dir/.placeholder"
+    cp "${placeholder_dir}/fullchain.pem" "${placeholder_dir}/chain.pem"
+    touch "${placeholder_dir}/.placeholder"
   fi
 
-  ln -sf "../../archive/$domain/$(basename "$placeholder_dir")/privkey.pem" "$live_dir/privkey.pem"
-  ln -sf "../../archive/$domain/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/fullchain.pem"
-  ln -sf "../../archive/$domain/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/chain.pem"
-  ln -sf "../../archive/$domain/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/cert.pem"
+  ln -sf "../placeholders/${domain}/$(basename "$placeholder_dir")/privkey.pem" "$live_dir/privkey.pem"
+  ln -sf "../placeholders/${domain}/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/fullchain.pem"
+  ln -sf "../placeholders/${domain}/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/chain.pem"
+  ln -sf "$live_dir/fullchain.pem" "$live_dir/cert.pem"
   touch "$live_dir/.placeholder"
 }
 
@@ -89,7 +89,7 @@ for domain in ${DOMAINS//,/ }; do
     rm -f "/etc/letsencrypt/renewal/${domain}.conf"
     certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d "$domain"
     rm -f "$live_dir/.placeholder"
-    find "$archive_dir" -type f -name '.placeholder' -delete || true
+    rm -rf "/etc/letsencrypt/placeholders/${domain}"
     systemctl reload nginx
     certbot_runed=true
   fi
