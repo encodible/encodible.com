@@ -1,0 +1,27 @@
+{
+  "name": "kiln-ai-meetup",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "ai",
+    "landing",
+    "vite",
+    "react"
+  ],
+  "author": "Kiln",
+  "license": "MIT",
+  "description": "Neon cyber-tech landing page and RSVP experience for the OpenClaw + Codex + Claude AI meetup.",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
