@@ -22,7 +22,25 @@ if ! command -v certbot >/dev/null; then
   install_certbot
 fi
 
+create_placeholder_cert() {
+  mkdir -p /etc/letsencrypt/live/encodible.com /etc/letsencrypt/archive/encodible.com /etc/letsencrypt/renewal
+  openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
+    -keyout /etc/letsencrypt/live/encodible.com/privkey.pem \
+    -out /etc/letsencrypt/live/encodible.com/fullchain.pem \
+    -subj "/CN=encodible.com" >/dev/null 2>&1
+}
+
 if [[ ! -d /etc/letsencrypt/live/encodible.com ]]; then
+  create_placeholder_cert
+fi
+
+if [[ ! -f /etc/letsencrypt/live/encodible.com/fullchain.pem ]] \
+  || [[ ! -f /etc/letsencrypt/live/encodible.com/privkey.pem ]]; then
+  create_placeholder_cert
+fi
+
+if [[ ! -f /etc/letsencrypt/live/encodible.com/fullchain.pem ]] \
+  || [[ ! -f /etc/letsencrypt/live/encodible.com/privkey.pem ]]; then
   certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d encodible.com
   systemctl reload nginx
 else
