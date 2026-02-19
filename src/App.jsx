@@ -1,23 +1,23 @@
 import React from 'react';
 import Nav from './components/Nav.jsx';
 import Hero from './components/Hero.jsx';
-import AgendaTimeline from './components/AgendaTimeline.jsx';
-import Highlights from './components/Highlights.jsx';
-import Showcase from './components/Showcase.jsx';
-import FAQ from './components/FAQ.jsx';
-import FooterCTA from './components/FooterCTA.jsx';
+import ValueGrid from './components/ValueGrid.jsx';
+import Platform from './components/Platform.jsx';
+import EventSpotlight from './components/EventSpotlight.jsx';
+import Resources from './components/Resources.jsx';
+import Footer from './components/Footer.jsx';
 
 const App = () => (
-  <div className="page">
-    <div className="page-inner">
+  <div className="site-shell">
+    <div className="site-inner">
       <Nav />
       <Hero />
-      <Highlights />
-      <AgendaTimeline />
-      <Showcase />
-      <FAQ />
+      <ValueGrid />
+      <Platform />
+      <EventSpotlight />
+      <Resources />
     </div>
-    <FooterCTA />
+    <Footer />
   </div>
 );
 

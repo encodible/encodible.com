@@ -1,39 +1,34 @@
 import React from 'react';
 
-const rsvpUrl = import.meta.env.VITE_RSVP_URL || '#rsvp';
-const hasRsvpLink = Boolean(import.meta.env.VITE_RSVP_URL);
-
-const linkProps = hasRsvpLink
-  ? { 'target': '_blank', 'rel': 'noreferrer noopener' }
-  : {};
+const heroStats = [
+  { label: 'Identity API', detail: 'Wallet SDK + attestations' },
+  { label: 'Voting Reach', detail: 'Precinct network + audit trails' },
+  { label: 'Ops Trust', detail: 'Immutable history + monitoring' }
+];
 
 const Hero = () => (
-  <section className="hero">
-    <div className="badge">OpenClaw • Codex • Claude</div>
-    <h1>AI Workshop & Technique Exchange · February 25, 2026</h1>
+  <section className="hero" id="platform">
+    <p className="hero-kicker">Identity · Voting · Trust</p>
+    <h1>Encodible is the modern stack for confident civic systems.</h1>
     <p>
-      OpenClaw + Codex + Claude builders meet in the Appaloosa conference room to demo apps, compare
-      automation patterns, and stack ways to ship faster.
+      Build identity, voting, and trust infra that scales globally. Encodible pairs resilient APIs
+      with automated monitoring so you can ship precinct-grade experiences without vendor lock-in.
     </p>
-    <div className="cta-group">
-      <a href={rsvpUrl} className="cta primary" {...linkProps}>
-        RSVP Now
+    <div className="hero-cta">
+      <a className="cta primary" href="/feb-2026-ai-event-01">
+        RSVP · Feb 25 AI Workshop
       </a>
-      <a href="#agenda" className="cta secondary">
-        View Agenda
+      <a className="cta secondary" href="#solutions">
+        Explore Solutions
       </a>
     </div>
-    <div className="hero-grid">
-      <article className="hero-card">
-        <p className="time-chip">Wednesday · 3:30 PM</p>
-        <h3>Appaloosa conference room</h3>
-        <p>Bring the tools you use daily, whether it’s Codex macros, OpenClaw watches, or Claude flows.</p>
-      </article>
-      <article className="hero-card">
-        <p className="time-chip">Technique focus</p>
-        <h3>Build, automate, monitor</h3>
-        <p>Show how you combine OpenClaw, Codex, Claude, or other AI agents to gain leverage quickly.</p>
-      </article>
+    <div className="hero-meta">
+      {heroStats.map((stat) => (
+        <article key={stat.label}>
+          <p className="hero-meta-label">{stat.label}</p>
+          <p className="hero-meta-detail">{stat.detail}</p>
+        </article>
+      ))}
     </div>
   </section>
 );

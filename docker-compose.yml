@@ -1,0 +1,11 @@
+services:
+  encodible:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: encodible-site
+    image: encodible-site:local
+    env_file:
+      - .env
+    ports:
+      - "9080:80"
