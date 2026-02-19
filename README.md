@@ -25,16 +25,12 @@ The local `docker-compose.yml` builds the production image and exposes port `908
 
 Ship the tracked host config from `infra/nginx/host/encodible.conf` to `/etc/nginx/conf.d/encodible.conf` so the system NGINX can proxy `encodible.com` → the container’s port `9080`.
 
-## Let’s Encrypt
+## TLS certificate
 
-You can obtain and renew TLS for `encodible.com` via the included helper:
+`encodible.com` now uses a manually managed TLS certificate (Namecheap PositiveSSL) installed on the host at:
 
-1. Ensure `certbot` is installed on the host (the script will install it via `apt` if missing).
-2. Export `LETSENCRYPT_EMAIL` (or pass it as the first argument to `infra/letsencrypt/request-cert.sh`) so the script can register with Let’s Encrypt.
-3. Run `infra/letsencrypt/request-cert.sh "$LETSENCRYPT_EMAIL"` on the host (it will issue or renew the cert and reload NGINX).
+- `/etc/ssl/encodible/domain.key`
+- `/etc/ssl/encodible/fullchain.pem`
+- `/etc/ssl/encodible/ca-bundle.pem`
 
-The helper now accepts a comma-separated list via the `LETSENCRYPT_DOMAINS` env var or second argument (defaults to `encodible.com`). It seeds each domain with a temporary placeholder certificate inside `/etc/letsencrypt/placeholders/<domain>/<version>` and points `/etc/letsencrypt/live/<domain>/*.pem` to those files with absolute symlinks so `nginx -t` can always read valid paths before Let’s Encrypt issues the real cert. The placeholder stays in place while `certbot certonly` runs and is only removed after a successful issue; if certbot fails, placeholders are intentionally left in place so future nginx checks still pass.
-
-The GitHub Actions deploy workflow also calls this script with the `LETSENCRYPT_EMAIL` secret before each deployment so the system proxy always has valid certs.
-
-Add the `LETSENCRYPT_EMAIL` secret to the GitHub repo so the workflow can register/renew the certificate non-interactively.
+`infra/nginx/host/encodible.conf` is configured to use those files directly. Deployments should keep these certificate files in place and should not run certbot for `encodible.com`.

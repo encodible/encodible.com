@@ -28,6 +28,30 @@ if ! command -v certbot >/dev/null; then
   install_certbot
 fi
 
+run_certbot_with_rate_limit_handling() {
+  local log_file
+  log_file="$(mktemp)"
+
+  set +e
+  "$@" 2>&1 | tee "$log_file"
+  local rc=$?
+  set -e
+
+  if [[ "$rc" -eq 0 ]]; then
+    rm -f "$log_file"
+    return 0
+  fi
+
+  if grep -Eqi "too many certificates|rate limit|retry after" "$log_file"; then
+    log "certbot hit a Let's Encrypt rate limit; continuing without failing deploy"
+    rm -f "$log_file"
+    return 20
+  fi
+
+  rm -f "$log_file"
+  return "$rc"
+}
+
 create_placeholder_cert() {
   local domain="$1"
   local live_dir="/etc/letsencrypt/live/${domain}"
@@ -92,18 +116,34 @@ for domain in ${DOMAINS//,/ }; do
 
   if TLS_REAL_EXISTS "$domain"; then
     log "real certificate already exists for ${domain}; running renew"
-    certbot renew --cert-name "$domain" --deploy-hook "systemctl reload nginx"
-    certbot_ran=true
+    certbot_status=0
+    run_certbot_with_rate_limit_handling certbot renew --cert-name "$domain" --deploy-hook "systemctl reload nginx" || certbot_status=$?
+    if [[ "$certbot_status" -eq 0 ]]; then
+      certbot_ran=true
+    elif [[ "$certbot_status" -eq 20 ]]; then
+      log "renew skipped due to rate limit for ${domain}; keeping current cert state"
+      certbot_ran=true
+    else
+      exit "$certbot_status"
+    fi
   else
     log "requesting initial certificate for ${domain} via nginx plugin"
     log "keeping placeholder in place while certbot runs"
     rm -f "/etc/letsencrypt/renewal/${domain}.conf"
-    certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d "$domain"
-    log "certificate issued for ${domain}; removing placeholder markers"
-    rm -f "$live_dir/.placeholder"
-    rm -rf "/etc/letsencrypt/placeholders/${domain}"
-    systemctl reload nginx
-    certbot_ran=true
+    certbot_status=0
+    run_certbot_with_rate_limit_handling certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d "$domain" || certbot_status=$?
+    if [[ "$certbot_status" -eq 0 ]]; then
+      log "certificate issued for ${domain}; removing placeholder markers"
+      rm -f "$live_dir/.placeholder"
+      rm -rf "/etc/letsencrypt/placeholders/${domain}"
+      systemctl reload nginx
+      certbot_ran=true
+    elif [[ "$certbot_status" -eq 20 ]]; then
+      log "initial issuance for ${domain} skipped due to rate limit; placeholder left in place"
+      certbot_ran=true
+    else
+      exit "$certbot_status"
+    fi
   fi
 done
 
