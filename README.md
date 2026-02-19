@@ -33,7 +33,7 @@ You can obtain and renew TLS for `encodible.com` via the included helper:
 2. Export `LETSENCRYPT_EMAIL` (or pass it as the first argument to `infra/letsencrypt/request-cert.sh`) so the script can register with Let’s Encrypt.
 3. Run `infra/letsencrypt/request-cert.sh "$LETSENCRYPT_EMAIL"` on the host (it will issue or renew the cert and reload NGINX).
 
-The helper now accepts a comma-separated list via the `LETSENCRYPT_DOMAINS` env var or second argument (defaults to `encodible.com`). It seeds each domain with a temporary placeholder certificate so nginx can start, removes the placeholder once Let’s Encrypt issues the real cert, and only renews domains that already have a valid certificate.
+The helper now accepts a comma-separated list via the `LETSENCRYPT_DOMAINS` env var or second argument (defaults to `encodible.com`). It seeds each domain with a temporary placeholder certificate inside `/etc/letsencrypt/archive/<domain>/<version>` and wires the `/etc/letsencrypt/live/<domain>` symlinks to that version so nginx can read a cert before Let’s Encrypt issues the real one. Once the TLS cert is obtained the placeholder marker is removed and only the real certificate remains; future runs simply renew whatever real certificates exist.
 
 The GitHub Actions deploy workflow also calls this script with the `LETSENCRYPT_EMAIL` secret before each deployment so the system proxy always has valid certs.
 
