@@ -2,6 +2,7 @@
 set -euo pipefail
 
 EMAIL="${1:-${LETSENCRYPT_EMAIL:-}}"
+DOMAINS="${2:-${LETSENCRYPT_DOMAINS:-encodible.com}}"
 
 if [[ -z "$EMAIL" ]]; then
   echo "ERROR: cert request requires LETSENCRYPT_EMAIL via argument or env var" >&2
@@ -23,26 +24,47 @@ if ! command -v certbot >/dev/null; then
 fi
 
 create_placeholder_cert() {
-  mkdir -p /etc/letsencrypt/live/encodible.com /etc/letsencrypt/archive/encodible.com /etc/letsencrypt/renewal
+  local domain="$1"
+  local live_dir="/etc/letsencrypt/live/${domain}"
+  mkdir -p "$live_dir" "/etc/letsencrypt/archive/${domain}" /etc/letsencrypt/renewal
   openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
-    -keyout /etc/letsencrypt/live/encodible.com/privkey.pem \
-    -out /etc/letsencrypt/live/encodible.com/fullchain.pem \
-    -subj "/CN=encodible.com" >/dev/null 2>&1
+    -keyout "$live_dir/privkey.pem" \
+    -out "$live_dir/fullchain.pem" \
+    -subj "/CN=${domain}" >/dev/null 2>&1
+  touch "$live_dir/.placeholder"
 }
 
-if [[ ! -d /etc/letsencrypt/live/encodible.com ]]; then
-  create_placeholder_cert
-fi
+TLS_REAL_EXISTS() {
+  local domain="$1"
+  local live_dir="/etc/letsencrypt/live/${domain}"
+  [[ -f "${live_dir}/fullchain.pem" ]] && [[ -f "${live_dir}/privkey.pem" ]] && [[ ! -f "${live_dir}/.placeholder" ]]
+}
 
-if [[ ! -f /etc/letsencrypt/live/encodible.com/fullchain.pem ]] \
-  || [[ ! -f /etc/letsencrypt/live/encodible.com/privkey.pem ]]; then
-  create_placeholder_cert
-fi
+certbot_runed=false
+for domain in ${DOMAINS//,/ }; do
+  domain="${domain// /}"
+  [[ -z "$domain" ]] && continue
+  live_dir="/etc/letsencrypt/live/${domain}"
 
-if [[ ! -f /etc/letsencrypt/live/encodible.com/fullchain.pem ]] \
-  || [[ ! -f /etc/letsencrypt/live/encodible.com/privkey.pem ]]; then
-  certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d encodible.com
-  systemctl reload nginx
-else
-  certbot renew --deploy-hook "systemctl reload nginx"
+  if [[ ! -d "$live_dir" ]]; then
+    create_placeholder_cert "$domain"
+  fi
+
+  if [[ ! -f "$live_dir/fullchain.pem" ]] || [[ ! -f "$live_dir/privkey.pem" ]]; then
+    create_placeholder_cert "$domain"
+  fi
+
+  if TLS_REAL_EXISTS "$domain"; then
+    certbot renew --cert-name "$domain" --deploy-hook "systemctl reload nginx"
+    certbot_runed=true
+  else
+    certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d "$domain"
+    rm -f "$live_dir/.placeholder"
+    systemctl reload nginx
+    certbot_runed=true
+  fi
+done
+
+if [[ "$certbot_runed" != true ]]; then
+  echo "No certbot action was necessary"
 fi
