@@ -9,8 +9,13 @@ if [[ -z "$EMAIL" ]]; then
   exit 1
 fi
 
+log() {
+  echo "[letsencrypt] $*"
+}
+
 install_certbot() {
   if command -v apt-get >/dev/null; then
+    log "certbot missing; installing via apt"
     apt-get update
     apt-get install -y certbot python3-certbot-nginx
   else
@@ -45,6 +50,7 @@ create_placeholder_cert() {
       version="$(printf '%04d' $((10#$highest + 1)))"
     fi
     placeholder_dir="${placeholder_root}/${version}"
+    log "creating placeholder certificate for ${domain} at ${placeholder_dir}"
     mkdir -p "$placeholder_dir"
     openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
       -keyout "${placeholder_dir}/privkey.pem" \
@@ -54,10 +60,11 @@ create_placeholder_cert() {
     touch "${placeholder_dir}/.placeholder"
   fi
 
-  ln -sf "../placeholders/${domain}/$(basename "$placeholder_dir")/privkey.pem" "$live_dir/privkey.pem"
-  ln -sf "../placeholders/${domain}/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/fullchain.pem"
-  ln -sf "../placeholders/${domain}/$(basename "$placeholder_dir")/fullchain.pem" "$live_dir/chain.pem"
-  ln -sf "$live_dir/fullchain.pem" "$live_dir/cert.pem"
+  # Keep nginx -t stable before certbot runs by pinning live links to absolute files.
+  ln -sfn "${placeholder_dir}/privkey.pem" "$live_dir/privkey.pem"
+  ln -sfn "${placeholder_dir}/fullchain.pem" "$live_dir/fullchain.pem"
+  ln -sfn "${placeholder_dir}/fullchain.pem" "$live_dir/chain.pem"
+  ln -sfn "$live_dir/fullchain.pem" "$live_dir/cert.pem"
   touch "$live_dir/.placeholder"
 }
 
@@ -67,34 +74,39 @@ TLS_REAL_EXISTS() {
   [[ -f "${live_dir}/fullchain.pem" ]] && [[ -f "${live_dir}/privkey.pem" ]] && [[ ! -f "${live_dir}/.placeholder" ]]
 }
 
-certbot_runed=false
+certbot_ran=false
 for domain in ${DOMAINS//,/ }; do
   domain="${domain// /}"
   [[ -z "$domain" ]] && continue
   live_dir="/etc/letsencrypt/live/${domain}"
-  archive_dir="/etc/letsencrypt/archive/${domain}"
 
   if [[ ! -d "$live_dir" ]]; then
+    log "live directory missing for ${domain}; seeding placeholder"
     create_placeholder_cert "$domain"
   fi
 
   if [[ ! -f "$live_dir/fullchain.pem" ]] || [[ ! -f "$live_dir/privkey.pem" ]]; then
+    log "live cert/key missing for ${domain}; seeding placeholder"
     create_placeholder_cert "$domain"
   fi
 
   if TLS_REAL_EXISTS "$domain"; then
+    log "real certificate already exists for ${domain}; running renew"
     certbot renew --cert-name "$domain" --deploy-hook "systemctl reload nginx"
-    certbot_runed=true
+    certbot_ran=true
   else
+    log "requesting initial certificate for ${domain} via nginx plugin"
+    log "keeping placeholder in place while certbot runs"
     rm -f "/etc/letsencrypt/renewal/${domain}.conf"
     certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d "$domain"
+    log "certificate issued for ${domain}; removing placeholder markers"
     rm -f "$live_dir/.placeholder"
     rm -rf "/etc/letsencrypt/placeholders/${domain}"
     systemctl reload nginx
-    certbot_runed=true
+    certbot_ran=true
   fi
 done
 
-if [[ "$certbot_runed" != true ]]; then
+if [[ "$certbot_ran" != true ]]; then
   echo "No certbot action was necessary"
 fi
