@@ -86,6 +86,7 @@ for domain in ${DOMAINS//,/ }; do
     certbot renew --cert-name "$domain" --deploy-hook "systemctl reload nginx"
     certbot_runed=true
   else
+    rm -f "/etc/letsencrypt/renewal/${domain}.conf"
     certbot certonly --nginx --agree-tos --no-eff-email -m "$EMAIL" -d "$domain"
     rm -f "$live_dir/.placeholder"
     find "$archive_dir" -type f -name '.placeholder' -delete || true
