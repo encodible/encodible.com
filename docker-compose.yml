@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_RSVP_URL: ${VITE_RSVP_URL:-https://forms.gle/VvCjGuKwbktcvzfU6}
     container_name: encodible-site
     image: encodible-site:local
     env_file:

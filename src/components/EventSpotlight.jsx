@@ -1,5 +1,8 @@
 import React from 'react';
 
+const RSVP_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSeHsdCEZf834RnPmBRsTj6u-lYuhgA-LrTslTOWZY975DcebQ/viewform?usp=dialog';
+
 const eventDetails = [
   { label: 'When', value: 'Wednesday, February 25 · 3:30 PM' },
   { label: 'Where', value: 'Appaloosa conference room' },
@@ -13,9 +16,6 @@ const agendaHighlights = [
 ];
 
 const EventSpotlight = () => {
-  const rsvpUrl = import.meta.env.VITE_RSVP_URL || '#rsvp';
-  const linkProps = rsvpUrl === '#rsvp' ? {} : { target: '_blank', rel: 'noreferrer noopener' };
-
   return (
     <section className="section event-spotlight" id="events">
       <div className="section-header">
@@ -39,7 +39,7 @@ const EventSpotlight = () => {
             <li key={item}>{item}</li>
           ))}
         </ul>
-        <a href={rsvpUrl} className="cta primary" {...linkProps}>
+        <a href={RSVP_URL} className="cta primary" target="_blank" rel="noreferrer noopener">
           RSVP and share your build
         </a>
       </div>

@@ -1,9 +1,9 @@
 import React from 'react';
 
-const EventHero = () => {
-  const rsvpUrl = import.meta.env.VITE_RSVP_URL || '#rsvp';
-  const linkProps = rsvpUrl === '#rsvp' ? {} : { target: '_blank', rel: 'noreferrer noopener' };
+const RSVP_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSeHsdCEZf834RnPmBRsTj6u-lYuhgA-LrTslTOWZY975DcebQ/viewform?usp=dialog';
 
+const EventHero = () => {
   return (
     <section className="event-hero">
       <p className="hero-kicker">OpenClaw · Codex · Claude</p>
@@ -13,7 +13,7 @@ const EventHero = () => {
         keep your projects moving faster.
       </p>
       <div className="hero-cta">
-        <a className="cta primary" href={rsvpUrl} {...linkProps}>
+        <a className="cta primary" href={RSVP_URL} target="_blank" rel="noreferrer noopener">
           RSVP now
         </a>
         <a className="cta secondary" href="/">

@@ -2,10 +2,15 @@
 set -euo pipefail
 
 EMAIL="${1:-${LETSENCRYPT_EMAIL:-}}"
-DOMAINS="${2:-${LETSENCRYPT_DOMAINS:-encodible.com}}"
+DOMAINS="${2:-${LETSENCRYPT_DOMAINS:-}}"
 
 if [[ -z "$EMAIL" ]]; then
   echo "ERROR: cert request requires LETSENCRYPT_EMAIL via argument or env var" >&2
+  exit 1
+fi
+
+if [[ -z "$DOMAINS" ]]; then
+  echo "ERROR: cert request requires LETSENCRYPT_DOMAINS via argument or env var" >&2
   exit 1
 fi
 
