@@ -16,10 +16,28 @@ Set `VITE_RSVP_URL` in `.env` (see `.env.example`) so the CTA buttons point at t
 
 ## Production
 
-1. `npm run build`
-2. `docker compose up -d --build`
+Production deployments run only through
+`.github/workflows/deploy.yml`. Pull requests build the site without deploying;
+merges to `master` build and deploy that exact commit to the production host.
+The workflow can also be started manually with GitHub's `workflow_dispatch`
+control, which preserves the same verification and deployment path.
 
-The local `docker-compose.yml` builds the production image and exposes port `9080`. The image copies the built `dist` output into NGINX and uses `infra/nginx/default.conf` to route the AI event page correctly.
+The GitHub `production` environment must define these values:
+
+- Secret `DEPLOY_SSH_KEY` — the private key for the production deploy identity.
+- Secret `DEPLOY_KNOWN_HOSTS` — the pinned SSH host-key entry for the server.
+- Variable `DEPLOY_HOST` — the production hostname or IP address.
+- Variable `DEPLOY_USER` — the production deploy user.
+- Variable `DEPLOY_PATH` — the clean server checkout, currently `/opt/encodible`.
+
+The workflow refuses to overwrite a dirty or divergent production checkout. It
+fast-forwards the checkout to the merged commit, rebuilds with Docker Compose,
+waits for the local upstream, and verifies both public HTTPS routes. The Compose
+service exposes port `9080` and uses `restart: unless-stopped` so a host reboot
+does not leave the site offline.
+
+The image copies the built `dist` output into NGINX and uses
+`infra/nginx/default.conf` to route the AI event page correctly.
 
 ## Host routing
 
