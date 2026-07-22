@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(170 70) rotate(43) scale(560 440)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5ED8CA" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#08141D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#08141D"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="76" y="68" width="58" height="58" fill="none" stroke="#5ED8CA" stroke-width="2" transform="rotate(-4 105 97)"/>
+  <text x="95" y="112" fill="#9CE9DF" font-family="Arial, sans-serif" font-size="34" font-weight="700">E</text>
+  <text x="158" y="96" fill="#F3F5EF" font-family="Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="4">ENCODIBLE</text>
+  <text x="158" y="122" fill="#A8B8BD" font-family="Arial, sans-serif" font-size="16" letter-spacing="1">TRUST SYSTEMS ENGINEERING</text>
+  <text x="76" y="280" fill="#F3F5EF" font-family="Arial, sans-serif" font-size="66" font-weight="600">Digital identity and trust</text>
+  <text x="76" y="360" fill="#9CE9DF" font-family="Arial, sans-serif" font-size="66" font-weight="600">systems, made operable.</text>
+  <line x1="76" y1="456" x2="1124" y2="456" stroke="#D8EFED" stroke-opacity=".2"/>
+  <text x="76" y="515" fill="#A8B8BD" font-family="Arial, sans-serif" font-size="24">Specialist software consulting by Kent Bull</text>
+  <text x="1124" y="515" fill="#E7B879" font-family="Arial, sans-serif" font-size="20" text-anchor="end">ENCODIBLE.COM</text>
+</svg>

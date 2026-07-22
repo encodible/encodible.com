@@ -3,13 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        VITE_RSVP_URL: ${VITE_RSVP_URL:-https://forms.gle/VvCjGuKwbktcvzfU6}
     container_name: encodible-site
     image: encodible-site:local
     restart: unless-stopped
-    env_file:
-      - .env
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --output-document=/dev/null http://127.0.0.1/ || exit 1"]
       interval: 30s
