@@ -19,7 +19,7 @@ const Hero = () => (
         operable software.
       </p>
       <div className="button-row">
-        <a className="button" href="mailto:hello@encodible.com?subject=Project%20inquiry">
+        <a className="button" href="mailto:kent@encodible.com?subject=Project%20inquiry">
           Discuss a project <span aria-hidden="true">→</span>
         </a>
         <a className="text-link" href="https://www.kentbull.com" target="_blank" rel="noreferrer noopener">
