@@ -107,6 +107,7 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --show-error --silent \
+            --dump-header /tmp/encodible-home.headers \
             --connect-timeout 10 --max-time 30 \
             --retry 5 --retry-all-errors --retry-delay 2 \
             https://encodible.com/ > /tmp/encodible-home.html
@@ -114,11 +115,13 @@ jobs:
             --connect-timeout 10 --max-time 30 \
             --retry 5 --retry-all-errors --retry-delay 2 \
             https://encodible.com/robots.txt > /tmp/encodible-robots.txt
-          event_status="$(curl --show-error --silent --output /dev/null \
-            --write-out '%{http_code}' \
+          read -r event_status event_redirect <<< "$(curl --show-error --silent --output /dev/null \
+            --write-out '%{http_code} %{redirect_url}' \
             --connect-timeout 10 --max-time 30 \
             https://encodible.com/feb-2026-ai-event-01)"
           grep --quiet '<div id="root"></div>' /tmp/encodible-home.html
           grep --quiet 'Digital Identity & Trust Systems Consulting' /tmp/encodible-home.html
+          grep --ignore-case --quiet '^cache-control: no-cache, no-store, must-revalidate' /tmp/encodible-home.headers
           grep --quiet 'Sitemap: https://encodible.com/sitemap.xml' /tmp/encodible-robots.txt
           test "$event_status" = "301"
+          test "$event_redirect" = "https://encodible.com/"
