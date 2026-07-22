@@ -11,8 +11,8 @@ const Contact = () => (
       </p>
     </div>
     <div className="contact-action">
-      <a className="button button-light" href="mailto:hello@encodible.com?subject=Project%20inquiry">
-        hello@encodible.com <span aria-hidden="true">→</span>
+      <a className="button button-light" href="mailto:kent@encodible.com?subject=Project%20inquiry">
+        kent@encodible.com <span aria-hidden="true">→</span>
       </a>
       <p>No sales handoff. No generic discovery funnel.</p>
     </div>

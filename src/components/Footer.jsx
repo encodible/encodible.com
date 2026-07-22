@@ -17,7 +17,7 @@ const Footer = () => (
       <a href="#work">Work</a>
       <a href="#about">About</a>
       <a href="https://www.kentbull.com" target="_blank" rel="noreferrer noopener">Writing ↗</a>
-      <a href="mailto:hello@encodible.com">hello@encodible.com</a>
+      <a href="mailto:kent@encodible.com">kent@encodible.com</a>
     </div>
     <p className="copyright">© {new Date().getFullYear()} Encodible</p>
   </footer>

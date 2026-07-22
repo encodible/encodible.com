@@ -21,7 +21,7 @@ const Nav = () => (
         <a key={link.label} href={link.href}>{link.label}</a>
       ))}
     </nav>
-    <a className="button button-small header-cta" href="mailto:hello@encodible.com?subject=Project%20inquiry">
+    <a className="button button-small header-cta" href="mailto:kent@encodible.com?subject=Project%20inquiry">
       Discuss a project
     </a>
     <details className="mobile-nav">
@@ -30,7 +30,7 @@ const Nav = () => (
         {links.map((link) => (
           <a key={link.label} href={link.href}>{link.label}</a>
         ))}
-        <a href="mailto:hello@encodible.com?subject=Project%20inquiry">Discuss a project</a>
+        <a href="mailto:kent@encodible.com?subject=Project%20inquiry">Discuss a project</a>
       </nav>
     </details>
   </header>
