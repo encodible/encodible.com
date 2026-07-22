@@ -1,0 +1,16 @@
+{
+  "name": "Encodible",
+  "short_name": "Encodible",
+  "description": "Digital identity and trust systems consulting by Kent Bull.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08141d",
+  "theme_color": "#08141d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

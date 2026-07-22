@@ -1,33 +1,38 @@
 import React from 'react';
 
-const events = [
-  { label: 'AI Workshop · Feb 25', href: '/feb-2026-ai-event-01' },
-  { label: 'Encodible ID Meetup', href: '#events' }
+const links = [
+  { label: 'Services', href: '#services' },
+  { label: 'Work', href: '#work' },
+  { label: 'About', href: '#about' },
+  { label: 'Writing', href: '#writing' }
 ];
 
 const Nav = () => (
   <header className="site-header">
-    <div className="brand-mark">
-      <span className="brand-name">Encodible</span>
-      <span className="brand-tagline">Identity · Voting · Trust</span>
-    </div>
-    <nav className="site-nav">
-      <a href="#platform">Platform</a>
-      <a href="#solutions">Solutions</a>
-      <details className="nav-dropdown">
-        <summary>Events</summary>
-        <div>
-          {events.map((event) => (
-            <a key={event.label} href={event.href}>
-              {event.label}
-            </a>
-          ))}
-        </div>
-      </details>
-    </nav>
-    <a className="cta primary" href="/feb-2026-ai-event-01">
-      RSVP AI Workshop
+    <a className="brand" href="#top" aria-label="Encodible home">
+      <span className="brand-symbol" aria-hidden="true">E</span>
+      <span className="brand-copy">
+        <span className="brand-name">Encodible</span>
+        <span className="brand-tagline">Trust systems engineering</span>
+      </span>
     </a>
+    <nav className="site-nav desktop-nav" aria-label="Primary navigation">
+      {links.map((link) => (
+        <a key={link.label} href={link.href}>{link.label}</a>
+      ))}
+    </nav>
+    <a className="button button-small header-cta" href="mailto:hello@encodible.com?subject=Project%20inquiry">
+      Discuss a project
+    </a>
+    <details className="mobile-nav">
+      <summary>Menu</summary>
+      <nav aria-label="Mobile navigation">
+        {links.map((link) => (
+          <a key={link.label} href={link.href}>{link.label}</a>
+        ))}
+        <a href="mailto:hello@encodible.com?subject=Project%20inquiry">Discuss a project</a>
+      </nav>
+    </details>
   </header>
 );
 

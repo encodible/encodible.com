@@ -1,9 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-ARG VITE_RSVP_URL
-ENV VITE_RSVP_URL=${VITE_RSVP_URL}
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 

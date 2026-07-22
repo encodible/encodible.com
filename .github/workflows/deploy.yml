@@ -113,6 +113,12 @@ jobs:
           curl --fail --show-error --silent \
             --connect-timeout 10 --max-time 30 \
             --retry 5 --retry-all-errors --retry-delay 2 \
-            https://encodible.com/feb-2026-ai-event-01 > /tmp/encodible-event.html
+            https://encodible.com/robots.txt > /tmp/encodible-robots.txt
+          event_status="$(curl --show-error --silent --output /dev/null \
+            --write-out '%{http_code}' \
+            --connect-timeout 10 --max-time 30 \
+            https://encodible.com/feb-2026-ai-event-01)"
           grep --quiet '<div id="root"></div>' /tmp/encodible-home.html
-          grep --quiet '<div id="root"></div>' /tmp/encodible-event.html
+          grep --quiet 'Digital Identity & Trust Systems Consulting' /tmp/encodible-home.html
+          grep --quiet 'Sitemap: https://encodible.com/sitemap.xml' /tmp/encodible-robots.txt
+          test "$event_status" = "301"

@@ -1,6 +1,6 @@
 {
-  "name": "kiln-ai-meetup",
-  "version": "0.1.0",
+  "name": "encodible-website",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -9,19 +9,19 @@
     "preview": "vite preview"
   },
   "keywords": [
-    "ai",
-    "landing",
-    "vite",
-    "react"
+    "digital-identity",
+    "consulting",
+    "keri",
+    "distributed-systems"
   ],
-  "author": "Kiln",
+  "author": "Encodible",
   "license": "MIT",
-  "description": "Neon cyber-tech landing page and RSVP experience for the OpenClaw + Codex + Claude AI meetup.",
+  "description": "Public website for Kent Bull's Encodible consulting practice.",
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "vite": "^6.0.0"
+    "vite": "^8.1.5"
   }
 }
