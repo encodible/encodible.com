@@ -51,13 +51,13 @@ The workflow builds on the GitHub runner, copies the files into a revision-named
 
 The tracked host configuration in `infra/nginx/host/encodible.conf` serves `encodible.com` and `www.encodible.com` from `/var/www/encodible.com/current` on the `bullblog` Droplet. The production deploy identity owns `/var/www/encodible.com` but does not need host administrator access for later releases.
 
-The production host uses a manually managed Namecheap PositiveSSL certificate at:
-
-- `/etc/ssl/encodible/domain.key`
-- `/etc/ssl/encodible/fullchain.pem`
-- `/etc/ssl/encodible/ca-bundle.pem`
-
-Deployments keep those files in place and do not run Certbot for `encodible.com`.
+Certbot manages the `encodible.com` and `www.encodible.com` certificate with
+the `/var/www/letsencrypt` webroot. The HTTP route serves ACME challenges;
+other HTTP requests redirect to HTTPS. The host's Certbot timer renews the
+certificate, and its deploy hook reloads Nginx after a successful renewal.
+Site deployments do not need to modify TLS configuration.
+Install the tracked `infra/certbot/reload-nginx.sh` as
+`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` with execute permission.
 
 `alcomatcher.com` and `www.alcomatcher.com` also point to bullblog. Their tracked
 host configuration in `infra/nginx/host/alcomatcher.conf` redirects both names
