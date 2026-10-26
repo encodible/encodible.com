@@ -47,6 +47,20 @@ jobs:
       name: production
       url: https://encodible.com
     steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Build static site
+        run: |
+          npm ci
+          npm run build
+
       - name: Configure deployment SSH key
         env:
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
@@ -60,7 +74,7 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/known_hosts ~/.ssh/id_ed25519
 
-      - name: Deploy exact merged commit
+      - name: Publish exact merged site
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
@@ -71,36 +85,47 @@ jobs:
           test -n "$DEPLOY_HOST"
           test -n "$DEPLOY_PATH"
           test -n "$DEPLOY_USER"
+          test "$DEPLOY_PATH" = /var/www/encodible.com
+          [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test -s dist/index.html
+          printf '%s\n' "$DEPLOY_SHA" > dist/.deploy-sha
+
+          target="$DEPLOY_USER@$DEPLOY_HOST"
           ssh \
             -o BatchMode=yes \
             -o ConnectTimeout=15 \
             -o IdentitiesOnly=yes \
             -o StrictHostKeyChecking=yes \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "$target" \
             bash -s -- "$DEPLOY_PATH" "$DEPLOY_SHA" <<'REMOTE'
           set -euo pipefail
           deploy_path=$1
           deploy_sha=$2
+          install -d -m 0755 "$deploy_path/releases/$deploy_sha"
+          REMOTE
 
-          cd "$deploy_path"
-          test -z "$(git status --porcelain)"
-          git fetch --prune origin master
-          git checkout master
-          git merge --ff-only "$deploy_sha"
-          test "$(git rev-parse HEAD)" = "$deploy_sha"
+          rsync -az --delete \
+            -e 'ssh -o BatchMode=yes -o ConnectTimeout=15 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes' \
+            dist/ "$target:$DEPLOY_PATH/releases/$DEPLOY_SHA/"
 
-          docker compose up -d --build --remove-orphans
-
-          for _ in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:9080/ > /dev/null; then
-              exit 0
-            fi
-            sleep 2
-          done
-
-          docker compose ps
-          docker compose logs --tail 100
-          exit 1
+          ssh \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "$target" \
+            bash -s -- "$DEPLOY_PATH" "$DEPLOY_SHA" <<'REMOTE'
+          set -euo pipefail
+          deploy_path=$1
+          deploy_sha=$2
+          release="$deploy_path/releases/$deploy_sha"
+          test "$(cat "$release/.deploy-sha")" = "$deploy_sha"
+          test -s "$release/index.html"
+          ln -sfn "releases/$deploy_sha" "$deploy_path/current.next"
+          mv -Tf "$deploy_path/current.next" "$deploy_path/current"
+          curl --fail --silent --show-error \
+            --resolve encodible.com:443:127.0.0.1 \
+            https://encodible.com/ | grep --quiet 'Digital Identity & Trust Systems Consulting'
           REMOTE
 
       - name: Verify public routes and TLS
